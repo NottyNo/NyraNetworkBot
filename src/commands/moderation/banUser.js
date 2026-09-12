@@ -8,16 +8,17 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('ban')
     .setDescription('Bans a user from the server.')
-    .addUserOption((option) => option.setName('target'))
-    .setDescription('The user to ban')
-    .setRequired(true)
+    .addUserOption((option) => option.setName('target')
+        .setDescription('The user to ban')
+        .setRequired(true))
     .addStringOption((option) =>
-      option
-        .setName('reason')
-        .setDescription('The reason for the ban')
-        .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
-        .setContexts(InteractionContextType.Guild),
-    ),
+        option
+            .setName('reason')
+            .setDescription('The reason for the ban')
+    )
+    .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
+    .setContexts(InteractionContextType.Guild),
+    
     async execute(interaction) {
         const targetUser = interaction.options.getUser('target');
         const reason = interaction.options.getString('reason') || 'No reason provided';
