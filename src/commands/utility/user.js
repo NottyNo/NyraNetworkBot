@@ -1,12 +1,40 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, time, TimestampStyles, MessageFlags } = require('discord.js');
 
 module.exports = {
-	data: new SlashCommandBuilder().setName('user').setDescription('Provides information about the user.'),
-	async execute(interaction) {
-		// interaction.user is the object representing the User who ran the command
-		// interaction.member is the GuildMember object, which represents the user in the specific guild
-		await interaction.reply(
-			`This command was run by ${interaction.user.username}, who joined on ${interaction.member.joinedAt}.`,
-		);
-	},
+    data: new SlashCommandBuilder()
+        .setName('user')
+        .setDescription('Provides information about a user.')
+        .addUserOption((option) =>
+            option
+                .setName('target')
+                .setDescription('The user to get information about')
+                .setRequired(false))
+        .addBooleanOption((option) =>
+            option
+                .setName('ephemeral')
+                .setDescription('Whether or not the reply should be ephemeral')),
+
+    async execute(interaction) {
+        const targetUser = interaction.options.getUser('target') || interaction.user;
+        const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+        const ephemeral = interaction.options.getBoolean('ephemeral') || false;
+
+        const memberEmbed = new EmbedBuilder()
+            .setColor('#0099ff')
+            .setTitle('User Information')
+            .setDescription([
+                `Username: ${targetUser.username}`,
+                `ID: ${targetUser.id}`,
+                `Joined Server at: ${member ? time(member.joinedAt, TimestampStyles.RelativeTime) : 'Unknown'}`,
+                `Account Created at: ${time(targetUser.createdAt, TimestampStyles.LongDateTime)}`,
+                `Is a Bot: ${targetUser.bot ? 'Yes' : 'No'}`,
+            ].join('\n'))
+            .setThumbnail(targetUser.displayAvatarURL({ dynamic: true }))
+            .setTimestamp();
+
+        return interaction.reply({
+            embeds: [memberEmbed],
+            flags: ephemeral ? MessageFlags.Ephemeral : undefined,
+        });
+    },
 };

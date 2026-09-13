@@ -1,11 +1,24 @@
 const { SlashCommandBuilder } = require('discord.js');
-
 module.exports = {
-	data: new SlashCommandBuilder().setName('server').setDescription('Provides information about the server.'),
+	data: new SlashCommandBuilder()
+		.setName('server')
+		.setDescription('Provides information about the server.')
+		.addUserOption((option) =>
+			option
+				.setName('target')
+				.setDescription('The user to ping in the server info message.')
+				.setRequired(false)),
 	async execute(interaction) {
 		// interaction.guild is the object representing the Guild in which the command was run
-		await interaction.reply(
-			`This server is ${interaction.guild.name} and has ${interaction.guild.memberCount} members.`,
-		);
+		const targetUser = interaction.options.getUser('target');
+		const serverInfoEmbed = {
+			color: 0x0099ff,
+			title: 'Server Information',
+			description: `IP: To be announced...`,
+		};
+		await interaction.reply({ 
+			content: targetUser ? `${targetUser}` : `${interaction.user}`,
+			embeds: [serverInfoEmbed] 
+		});
 	},
 };

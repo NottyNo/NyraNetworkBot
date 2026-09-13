@@ -23,7 +23,7 @@ module.exports = {
 
     await interaction.reply({
       content: input,
-      flags: ephemeral ? ephemeral : undefined,
+      flags: ephemeral ? ephemeral : false,
     });
   },
 };
