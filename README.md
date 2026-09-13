@@ -1,6 +1,6 @@
 # NyraNetworkBot
 
-Personal Discord bot built with [discord.js](https://discord.js.org/) for my own server - moderation and utility commands, with a leveling system on the way.
+Personal Discord bot built with [discord.js](https://discord.js.org/) for a friends' server - moderation and utility commands, with a leveling system on the way.
 
 ##  Features
 
