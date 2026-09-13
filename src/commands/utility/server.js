@@ -14,7 +14,7 @@ module.exports = {
 		const serverInfoEmbed = {
 			color: 0x0099ff,
 			title: 'Server Information',
-			description: `IP: To be announced...`,
+			description: `IP: play.nyra.network `,
 		};
 		await interaction.reply({ 
 			content: targetUser ? `${targetUser}` : `${interaction.user}`,
