@@ -26,10 +26,10 @@ module.exports = {
             .setTitle(`Warnings for ${target.tag}`)
             .setColor(0xffcc00)
             .setDescription(
-                warns.map((w, i) =>
-                    `**${i + 1}.** ${w.reason} — <t:${Math.floor(w.timestamp / 1000)}:R> (by <@${w.moderatorId}>)`
+                warns.map((w) =>
+                    `**ID: ${w.id}** — ${w.reason} — <t:${Math.floor(w.timestamp / 1000)}:R> (by <@${w.moderatorId}>)`
                 ).join('\n')
-            );
+            )
 
         await interaction.reply({ embeds: [embed], flags: MessageFlags.Ephemeral });
     },

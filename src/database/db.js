@@ -20,6 +20,7 @@ db.exec(`
         userId TEXT NOT NULL,
         moderatorId TEXT NOT NULL,
         reason TEXT,
+        type TEXT NOT NULL DEFAULT 'manual',
         timestamp INTEGER NOT NULL
     );
 
