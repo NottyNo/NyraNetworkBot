@@ -1,0 +1,7 @@
+{
+    "roleMultipliers": {
+        "ROLE1_ID": 1.5,
+        "ROLE2_ID": 2
+    },
+    "default": 1
+}
