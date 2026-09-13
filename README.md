@@ -41,8 +41,8 @@ src/
 
 - **`commands/`** - Slash command files, grouped by category. Each one exports `data` (command definition) and `execute` (handler).
 - **`events/`** - Event listeners (bot ready, interaction handling).
-- **`deploy-commands-guild.js`** - Registers commands to my server only (instant, used for day-to-day dev/testing).
-- **`deploy-commands-global.js`** - Registers commands globally (rarely needed, propagation takes up to an hour).
+- **`deploy-commands-guild.js`** - Registers commands to my server only (used for day-to-day dev/testing on a different server).
+- **`deploy-commands-global.js`** - Registers commands globally.
 - **`delete-commands.js`** - Unregisters commands when cleaning up.
 - **`index.js`** - Bot entry point.
 
