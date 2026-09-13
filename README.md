@@ -64,3 +64,4 @@ src/
 - [ ] Leveling system (XP gain, level-ups, leaderboard)
 - [ ] Additional moderation tools
 - [ ] More utility commands
+- [ ] /cleanup x — takes in a number and removes that amount of most recent sent messages
