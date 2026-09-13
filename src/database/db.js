@@ -39,6 +39,13 @@ db.exec(`
         joinedAt INTEGER NOT NULL,
         PRIMARY KEY (guildId, userId)
     );
+    
+    CREATE TABLE IF NOT EXISTS stat_channels (
+        guildId TEXT NOT NULL,
+        key TEXT NOT NULL,
+        channelId TEXT NOT NULL,
+        PRIMARY KEY (guildId, key)
+    )
 `);
 
 module.exports = db;

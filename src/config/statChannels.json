@@ -1,0 +1,9 @@
+{
+    "categoryName": "Statistics",
+    "channels": [
+        {"key": "memberCount", "dynamic" : true, "template": "Members: {count}"},
+        {"key": "botCount", "dynamic" : true, "template": "Bots: {count}"},
+        {"key": "IP", "dynamic" : false, "name": "IP: play.nyra.network"},
+        {"key": "invite", "dynamic" : false, "name": "discord.gg/nyranetwork"}
+    ]
+}
