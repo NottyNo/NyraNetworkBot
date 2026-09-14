@@ -1,9 +1,10 @@
 {
   "dependencies": {
     "better-sqlite3": "^13.0.3",
-    "discord.js": "^14.27.0",
-    "dotenv": "^17.4.2",
-    "nodemon": "^3.1.14"
+    "discord.js": "^14.27.0"
+  },
+  "allowScripts": {
+      "better-sqlite3": true
   },
   "name": "nyra-network-dev",
   "version": "1.0.0",
