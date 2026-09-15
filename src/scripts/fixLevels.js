@@ -1,4 +1,4 @@
-const db = require('./database/db');
+const db = require('../database/db');
 
 function xpForLevel(level) {
     return 5 * (level ** 2) + 50 * level + 100;
