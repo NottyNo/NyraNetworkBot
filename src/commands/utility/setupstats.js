@@ -9,6 +9,6 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         await setupStatChannels(interaction.guild);
-        await interaction.editReply('✅ Stats channels created.');
+        await interaction.editReply('Stats channels created.');
     },
 };

@@ -20,6 +20,19 @@ function buildName(def, guild) {
     return def.template;
 }
 
+// Forces the category to the very top of the channel list.
+// Retried with a small delay since Discord sometimes needs a moment
+// after channel creation/deletion before position changes stick.
+async function moveCategoryToTop(category) {
+    await category.setPosition(0).catch(() => {});
+
+    // Double-check and retry once if it didn't take
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    if (category.rawPosition !== 0) {
+        await category.setPosition(0).catch(() => {});
+    }
+}
+
 async function setupStatChannels(guild) {
     // Skip if already set up for this guild
     const existing = db.prepare(`SELECT COUNT(*) AS count FROM stat_channels WHERE guildId = ?`).get(guild.id);
@@ -58,10 +71,11 @@ async function setupStatChannels(guild) {
             INSERT OR REPLACE INTO stat_channels (guildId, key, channelId)
             VALUES (?, ?, ?)
         `).run(guild.id, def.key, channel.id);
+
+        await moveCategoryToTop(category);
     }
 
-    // Push the category above all other categories
-    await category.setPosition(0).catch(() => {});
+    await moveCategoryToTop(category);
 }
 
 async function performUpdate(guild) {
@@ -111,6 +125,7 @@ function updateStatChannels(guild) {
 async function forceUpdateStatChannels(guild) {
     await performUpdate(guild);
 }
+
 async function syncStatChannels(guild) {
     const results = { created: [], renamed: [], removed: [] };
 
@@ -162,6 +177,7 @@ async function syncStatChannels(guild) {
                 VALUES (?, ?, ?)
             `).run(guild.id, def.key, channel.id);
 
+            await moveCategoryToTop(category);
             results.created.push(desiredName);
             continue;
         }
@@ -212,6 +228,11 @@ async function syncStatChannels(guild) {
         }
     }
 
+    // Always re-force the category back to the top, in case something else
+    // (another bot, a manual reorder, a newly-created category) pushed it down
+    await moveCategoryToTop(category);
+
     return results;
 }
+
 module.exports = { setupStatChannels, updateStatChannels, forceUpdateStatChannels, syncStatChannels };
