@@ -1,5 +1,5 @@
 {
-    "categoryName": "Statistics",
+    "categoryName": "📊 Statistics",
     "channels": [
         {"key": "memberCount", "dynamic" : true, "template": "Members: {count}"},
         {"key": "botCount", "dynamic" : true, "template": "Bots: {count}"},
