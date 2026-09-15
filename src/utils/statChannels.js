@@ -10,7 +10,8 @@ async function buildName(def, guild) {
     if (!def.dynamic) return def.name;
 
     if (def.key === 'memberCount') {
-        return def.template.replace('{count}', guild.memberCount);
+        const count = guild.memberCount ?? 0;
+        return def.template.replace('{count}', count);
     }
     if (def.key === 'botCount') {
         await guild.members.fetch();
