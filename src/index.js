@@ -14,6 +14,10 @@ setGlobalDispatcher(new Agent({
 }));
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildVoiceStates] });
+
+client.rest?.setMaxListeners?.(20);
+require('node:events').EventEmitter.defaultMaxListeners = 20;
+
 client.commands = new Collection(); 
 
 const foldersPath = path.join(__dirname, 'commands');
