@@ -26,7 +26,7 @@ function awardVoiceXp(guildId, userId, member, minutesSpent) {
     let newLevel = row.level;
     let leveledUp = false;
 
-    if (newXp >= xpForLevel(row.level)) {
+    while (newXp >= xpForLevel(newLevel)) {
         newLevel += 1;
         leveledUp = true;
     }
