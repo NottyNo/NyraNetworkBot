@@ -22,7 +22,7 @@ module.exports = {
         `).run(interaction.guild.id, target.id, interaction.user.id, reason, Date.now());
 
         await interaction.reply({
-            content: `⚠️ ${target.tag} has been warned. Reason: ${reason}`,
+            content: `${target.tag} has been warned. Reason: ${reason}`,
             flags: MessageFlags.Ephemeral,
         });
     },

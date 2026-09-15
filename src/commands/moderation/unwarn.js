@@ -54,7 +54,7 @@ module.exports = {
             db.prepare(`DELETE FROM warns WHERE id = ?`).run(warnId);
 
             return interaction.reply({
-                content: `✅ Removed warning **#${warnId}** (${warn.reason}) from ${target.tag}.`,
+                content: `Removed warning **#${warnId}** (${warn.reason}) from ${target.tag}.`,
                 flags: MessageFlags.Ephemeral,
             });
         }
@@ -80,8 +80,8 @@ module.exports = {
 
             return interaction.reply({
                 content: type
-                    ? `✅ Removed all ${result.changes} **${type}** warning(s) from ${target.tag}.`
-                    : `✅ Removed all ${result.changes} warning(s) from ${target.tag}.`,
+                    ? `Removed all ${result.changes} **${type}** warning(s) from ${target.tag}.`
+                    : `Removed all ${result.changes} warning(s) from ${target.tag}.`,
                 flags: MessageFlags.Ephemeral,
             });
         }
@@ -107,7 +107,7 @@ module.exports = {
         db.prepare(`DELETE FROM warns WHERE id = ?`).run(latest.id);
 
         return interaction.reply({
-            content: `✅ Removed the most recent warning **#${latest.id}** (${latest.reason}) from ${target.tag}.`,
+            content: `Removed the most recent warning **#${latest.id}** (${latest.reason}) from ${target.tag}.`,
             flags: MessageFlags.Ephemeral,
         });
     },
