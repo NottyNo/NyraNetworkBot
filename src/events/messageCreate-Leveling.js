@@ -2,7 +2,7 @@ const { Events } = require('discord.js');
 const db = require('../database/db');
 const { getMultiplier, xpForLevel } = require('../utils/xp');
 
-const XP_COOLDOWN = 60 * 1000;
+const XP_COOLDOWN = 0 * 1000;
 const MIN_XP = 15;
 const MAX_XP = 25;
 const LEVEL_UP_CHANNEL_ID = '1549377391648837652'; // <-- set the same channel ID here
