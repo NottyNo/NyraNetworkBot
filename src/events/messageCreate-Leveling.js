@@ -5,6 +5,7 @@ const { getMultiplier, xpForLevel } = require('../utils/xp');
 const XP_COOLDOWN = 60 * 1000;
 const MIN_XP = 15;
 const MAX_XP = 25;
+const LEVEL_UP_CHANNEL_ID = '1549377391648837652'; // <-- set the same channel ID here
 
 module.exports = {
     name: Events.MessageCreate,
@@ -45,7 +46,8 @@ module.exports = {
         `).run(newXp, newLevel, now, message.guild.id, message.author.id);
 
         if (leveledUp) {
-            message.channel.send(`Congratulations ${message.author}, you leveled up to **level ${newLevel}**!`).catch(() => {});
+            const channel = message.guild.channels.cache.get(LEVEL_UP_CHANNEL_ID);
+            channel?.send(`Congratulations ${message.author}, you leveled up to **level ${newLevel}**!`).catch(() => {});
         }
     },
 };

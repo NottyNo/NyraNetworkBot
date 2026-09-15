@@ -3,6 +3,7 @@ const db = require('../database/db');
 const { getMultiplier, xpForLevel } = require('../utils/xp');
 
 const XP_PER_MINUTE = 5;
+const LEVEL_UP_CHANNEL_ID = '1549377391648837652'; // <-- set the channel ID here
 
 function awardVoiceXp(guildId, userId, member, minutesSpent) {
     if (minutesSpent < 1) return;
@@ -36,7 +37,8 @@ function awardVoiceXp(guildId, userId, member, minutesSpent) {
     `).run(newXp, newLevel, guildId, userId);
 
     if (leveledUp) {
-        member.guild.systemChannel?.send(`🎉 ${member}, you leveled up to **level ${newLevel}** from voice activity!`).catch(() => {});
+        const channel = member.guild.channels.cache.get(LEVEL_UP_CHANNEL_ID);
+        channel?.send(`🎉 ${member}, you leveled up to **level ${newLevel}** from voice activity!`).catch(() => {});
     }
 }
 
@@ -49,7 +51,6 @@ module.exports = {
         const guildId = oldState.guild.id;
         const userId = member.id;
 
-        // User joined a voice channel (wasn't in one before)
         if (!oldState.channelId && newState.channelId) {
             db.prepare(`
                 INSERT OR REPLACE INTO voice_sessions (guildId, userId, joinedAt)
@@ -58,7 +59,6 @@ module.exports = {
             return;
         }
 
-        // User left a voice channel entirely (was in one, now isn't)
         if (oldState.channelId && !newState.channelId) {
             const session = db.prepare(`
                 SELECT * FROM voice_sessions WHERE guildId = ? AND userId = ?
@@ -74,7 +74,5 @@ module.exports = {
             }
             return;
         }
-
-        // User switched channels — continuous session, no action needed
     },
 };
