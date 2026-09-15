@@ -1,4 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('server')
@@ -12,7 +14,7 @@ module.exports = {
 		// interaction.guild is the object representing the Guild in which the command was run
 		const targetUser = interaction.options.getUser('target');
 		const serverInfoEmbed = {
-			color: 0x0099ff,
+			color: embedColor,
 			title: 'Server Information',
 			description: `IP: play.nyra.network `,
 		};

@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const db = require('../../database/db');
-
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
 function xpForLevel(level) {
     return 5 * (level ** 2) + 50 * level + 100;
 }
@@ -31,10 +31,11 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setTitle(`${target.username}'s Rank`)
             .setThumbnail(target.displayAvatarURL())
-            .setColor(0x5865f2)
+            .setColor(embedColor)
             .addFields(
                 { name: 'Level', value: `${row.level}`, inline: true },
                 { name: 'XP', value: `${row.xp} / ${needed}`, inline: true },
+                { name: 'XP Needed for Next Level', value: `${needed - row.xp}`, inline: false }
             );
 
         await interaction.reply({ embeds: [embed] });

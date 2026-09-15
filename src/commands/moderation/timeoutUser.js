@@ -1,4 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, InteractionContextType, EmbedBuilder } = require('discord.js');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -58,7 +60,7 @@ module.exports = {
             });
 
             const timeoutEmbed = new EmbedBuilder()
-                .setColor('#FF0000')
+                .setColor(embedColor)
                 .setTitle('You have been timed out')
                 .setDescription(`You have been timed out from ${interaction.guild.name} for ${duration} minutes. Reason: ${reason}`);
             await targetUser.send({ embeds: [timeoutEmbed] }).catch(() => null);

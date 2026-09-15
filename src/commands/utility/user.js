@@ -1,4 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, time, TimestampStyles, MessageFlags } = require('discord.js');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,7 +22,7 @@ module.exports = {
         const ephemeral = interaction.options.getBoolean('ephemeral') || false;
 
         const memberEmbed = new EmbedBuilder()
-            .setColor('#0099ff')
+            .setColor(embedColor)
             .setTitle('User Information')
             .setDescription([
                 `Username: ${targetUser.username}`,

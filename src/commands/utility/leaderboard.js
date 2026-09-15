@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require('../../database/db');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,7 +26,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setTitle(`🏆 ${interaction.guild.name} Leaderboard`)
-            .setColor(0xf1c40f)
+            .setColor(embedColor)
             .setDescription(description.join('\n'));
 
         await interaction.reply({ embeds: [embed] });

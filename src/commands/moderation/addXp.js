@@ -65,7 +65,7 @@ module.exports = {
         `).run(newXp, newLevel, interaction.guild.id, target.id);
 
         await interaction.reply({
-            content: `✅ Added **${amount} XP** to ${target.tag}. They are now at **${newXp} XP**, Level **${newLevel}**${leveledUp ? ' (leveled up!)' : ''}.`,
+            content: `Added **${amount} XP** to ${target.tag}. They are now at **${newXp} XP**, Level **${newLevel}**${leveledUp ? ' (leveled up!)' : ''}.`,
             flags: MessageFlags.Ephemeral,
         });
     },

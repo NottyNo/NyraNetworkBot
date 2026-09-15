@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, EmbedBuilder } = require('discord.js');
 const { syncStatChannels } = require('../../utils/statChannels');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -14,7 +15,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setTitle('Stats Channels Synced')
-                .setColor(0x2ecc71)
+                .setColor(embedColor)
                 .addFields(
                     { name: 'Created', value: results.created.length ? results.created.join('\n') : 'None' },
                     { name: 'Renamed', value: results.renamed.length ? results.renamed.join('\n') : 'None' },
@@ -24,7 +25,7 @@ module.exports = {
             await interaction.editReply({ embeds: [embed] });
         } catch (error) {
             console.error(error);
-            await interaction.editReply('❌ Something went wrong while syncing stats channels.');
+            await interaction.editReply('Something went wrong while syncing stats channels.');
         }
     },
 };

@@ -1,4 +1,6 @@
 const { SlashCommandBuilder, PermissionFlagsBits, InteractionContextType, MessageFlags } = require('discord.js');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,7 +17,7 @@ module.exports = {
     async execute(interaction) {
         const amount = interaction.options.getInteger('amount');
         const replyEmbed = {
-            color: 0x0099ff,
+            color: embedColor,
             title: 'Chat Cleared',
             description: `Successfully deleted \`${amount}\` messages.`,
         };

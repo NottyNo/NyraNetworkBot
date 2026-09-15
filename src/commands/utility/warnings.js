@@ -1,5 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, MessageFlags } = require('discord.js');
 const db = require('../../database/db');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -24,7 +26,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setTitle(`Warnings for ${target.tag}`)
-            .setColor(0xffcc00)
+            .setColor(embedColor)
             .setDescription(
                 warns.map((w) =>
                     `**ID: ${w.id}** — ${w.reason} — <t:${Math.floor(w.timestamp / 1000)}:R> (by <@${w.moderatorId}>)`
