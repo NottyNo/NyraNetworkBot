@@ -1,5 +1,6 @@
-const { REST, Routes } = require('discord.js');
+const { REST, Routes, RESTEvents } = require('discord.js');
 const { clientId, guildId, token } = require('../config/config.json');
+const { client } = require('../index.js');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -7,6 +8,12 @@ const commands = [];
 // Grab all the command folders from the commands directory you created earlier
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
+
+client.rest.on(RESTEvents.Response, (request, response) => {
+    if (response.status !== 403 && response.status !== 429) return;
+
+    console.log('Discord API request was limited.');
+});
 
 for (const folder of commandFolders) {
 	// Grab all the command files from the commands directory you created earlier

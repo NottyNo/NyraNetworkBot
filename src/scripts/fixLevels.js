@@ -1,4 +1,12 @@
 const db = require('../database/db');
+const { client } = require('../index.js');
+const { RESTEvents } = require('discord.js');
+
+client.rest.on(RESTEvents.Response, (request, response) => {
+    if (response.status !== 403 && response.status !== 429) return;
+
+    console.log('Discord API request was limited.');
+});
 
 function xpForLevel(level) {
     return 5 * (level ** 2) + 50 * level + 100;
