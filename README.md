@@ -1,67 +1,36 @@
 # NyraNetworkBot
 
-Personal Discord bot built with [discord.js](https://discord.js.org/) for a friends' server - moderation and utility commands, with a leveling system on the way.
-
+Personal Discord bot built with [discord.js](https://discord.js.org/) for a friends' server - moderation and utility commands.
 ##  Features
 
 ###  Moderation
-- `/ban` - Ban a user from the server, with an optional reason
-- `/timeout` - Temporarily timeout a user
+- `/banUser {user} [reason]` - Ban a user from the server, with an optional reason
+- `/timeoutUser {user} [reason]` - Temporarily timeout a user
+- `/warn {user} [reason]` - Warn a user
+- `/unwarn {user} [reason]` - Remove warn a user
+- `/cleanChat {amount}` - Removes a certain amount of most recent messages from a chat
+- `/addXp {user} {amount}` - Adds XP to a certain user
+- `/removexp {user} {amount}` - Removes XP from a certain user
+- `/mute {user}` - Voice mutes a user for Voice Chats
 
 ###  Utility
-- `/echo` - Replies with your input (optionally ephemeral)
-- `/ping` - Check the bot's latency
-- `/server` - Get information about the current server
-- `/user` - Get information about a user
+- `/leaderboard` - Shows a leaderboard with the top 10 people with the most XP
+- `/rank [user]` - Shows rank info about yourself or another user
+- `/setupstats` - Sets up stat channels for the Server (Members, Bots, Server IP, discord link)
+- `/refreshstats` - Force refreshes stat channels in case of change in the config
+- `/server` - Replies with info about the servers Minecraft IP
+- `/user {user}` - Displays information about a certain user like Account Creation Date, User ID, ...
+- `/warnings {user}` - Displays all warnings a certain user has
 
 ###  In progress
-- **Leveling system** - XP and level tracking for server members
-
-##  Project structure
-
-```
-src/
-├── commands/
-│   ├── moderation/
-│   │   ├── banUser.js
-│   │   └── timeoutUser.js
-│   └── utility/
-│       ├── echo.js
-│       ├── ping.js
-│       ├── server.js
-│       └── user.js
-├── events/
-│   ├── interactionCreate.js
-│   └── ready.js
-├── deploy-commands-global.js
-├── deploy-commands-guild.js
-├── delete-commands.js
-└── index.js
-```
-
-- **`commands/`** - Slash command files, grouped by category. Each one exports `data` (command definition) and `execute` (handler).
-- **`events/`** - Event listeners (bot ready, interaction handling).
-- **`deploy-commands-guild.js`** - Registers commands to my server only (used for day-to-day dev/testing on a different server).
-- **`deploy-commands-global.js`** - Registers commands globally.
-- **`delete-commands.js`** - Unregisters commands when cleaning up.
-- **`index.js`** - Bot entry point.
-
-##  Local setup notes
-
-1. `npm install`
-2. `.env` needs:
-   ```env
-   DISCORD_TOKEN=...
-   CLIENT_ID=...
-   GUILD_ID=...
-   ```
-3. Adjust `config.json` as needed.
-4. Deploy commands: `node src/deploy-commands-guild.js`
-5. Run: `node src/index.js`
+- **Giveaway System** - Creating Giveaways where users who might meet certain conditions can interact and participate
+- **Welcome Messages** - A nice greeting once a user joins the server
 
 ## Roadmap
 
-- [ ] Leveling system (XP gain, level-ups, leaderboard)
-- [ ] Additional moderation tools
-- [ ] More utility commands
-- [ ] /cleanup x — takes in a number and removes that amount of most recent sent messages
+- [x] Leveling system (XP gain, level-ups, leaderboard)
+- [x] Additional moderation tools
+- [x] More utility commands
+- [x] /cleanup x — takes in a number and removes that amount of most recent sent messages
+- [ ] Giveaway functionality - Create, Delete and Manage Giveaways
+- [ ] Welcome Messages
