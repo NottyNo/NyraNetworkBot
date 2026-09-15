@@ -6,13 +6,14 @@ const UPDATE_COOLDOWN_MS = 10 * 60 * 1000;
 const lastUpdate = new Map();
 const pendingUpdate = new Map();
 
-function buildName(def, guild) {
+async function buildName(def, guild) {
     if (!def.dynamic) return def.name;
 
     if (def.key === 'memberCount') {
         return def.template.replace('{count}', guild.memberCount);
     }
     if (def.key === 'botCount') {
+        await guild.members.fetch();
         const botCount = guild.members.cache.filter((m) => m.user.bot).size;
         return def.template.replace('{count}', botCount);
     }
@@ -20,11 +21,6 @@ function buildName(def, guild) {
     return def.template;
 }
 
-// Forces the category to the top by explicitly re-numbering ALL categories
-// with clean, unique positions. A single setPosition(0) can silently fail
-// to visually reorder if another category already shares position 0 —
-// Discord breaks position ties using channel ID (creation order), so
-// simply "setting position to 0" doesn't guarantee you win that tiebreak.
 async function moveCategoryToTop(category) {
     const guild = category.guild;
 
@@ -60,7 +56,7 @@ async function setupStatChannels(guild) {
     });
 
     for (const def of config.channels) {
-        const name = buildName(def, guild);
+        const name = await buildName(def, guild);
 
         const channel = await guild.channels.create({
             name,
@@ -101,7 +97,7 @@ async function performUpdate(guild) {
 
         if (!category) category = channel.parent;
 
-        const newName = buildName(def, guild);
+        const newName = await buildName(def, guild);
         if (channel.name !== newName) {
             await channel.setName(newName).catch(() => {});
         }
@@ -163,7 +159,7 @@ async function syncStatChannels(guild) {
             SELECT * FROM stat_channels WHERE guildId = ? AND key = ?
         `).get(guild.id, def.key);
 
-        const desiredName = buildName(def, guild);
+        const desiredName = await buildName(def, guild);
 
         if (!row) {
             const channel = await guild.channels.create({
