@@ -45,7 +45,36 @@ db.exec(`
         key TEXT NOT NULL,
         channelId TEXT NOT NULL,
         PRIMARY KEY (guildId, key)
-    )
+    );
+    
+    CREATE TABLE IF NOT EXISTS giveaways (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guildId TEXT NOT NULL,
+        channelId TEXT NOT NULL,
+        messageId TEXT,
+        hostId TEXT NOT NULL,
+        prize TEXT NOT NULL,
+        winnerCount INTEGER NOT NULL DEFAULT 1,
+        requirements TEXT NOT NULL DEFAULT '{}',
+        endTime INTEGER NOT NULL,
+        ended INTEGER NOT NULL DEFAULT 0,
+        winners TEXT NOT NULL DEFAULT '[]'
+    );
+
+    CREATE TABLE IF NOT EXISTS giveaway_entries (
+        giveawayId INTEGER NOT NULL,
+        userId TEXT NOT NULL,
+        enteredAt INTEGER NOT NULL,
+        PRIMARY KEY (giveawayId, userId)
+    );
+
+    CREATE TABLE IF NOT EXISTS daily_messages (
+        guildId TEXT NOT NULL,
+        userId TEXT NOT NULL,
+        date TEXT NOT NULL,
+        count INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (guildId, userId, date)
+    );
 `);
 
 module.exports = db;
