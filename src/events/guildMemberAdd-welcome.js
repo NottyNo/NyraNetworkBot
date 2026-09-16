@@ -1,18 +1,24 @@
 const { Events, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const db = require('../database/db');
 const { colors: { embed: embedColor } } = require('../config/colors.json');
 
-// TODO: replace with the real path to your welcome image once it's ready
-const WELCOME_IMAGE_PATH = './assets/welcome-banner.png';
-
-// TODO: set the channel ID where welcome messages should be posted
-const WELCOME_CHANNEL_ID = 'YOUR_CHANNEL_ID_HERE';
+const WELCOME_IMAGE_PATH = '../images/welcome.png';
 
 module.exports = {
     name: Events.GuildMemberAdd,
     async execute(member) {
-        const channel = member.guild.channels.cache.get(WELCOME_CHANNEL_ID);
+        const settings = db.prepare(`
+            SELECT welcomeChannelId FROM guild_settings WHERE guildId = ?
+        `).get(member.guild.id);
+
+        if (!settings?.welcomeChannelId) {
+            // No welcome channel configured for this server yet
+            return;
+        }
+
+        const channel = member.guild.channels.cache.get(settings.welcomeChannelId);
         if (!channel) {
-            console.warn(`Welcome channel (${WELCOME_CHANNEL_ID}) not found in guild ${member.guild.id}.`);
+            console.warn(`Welcome channel (${settings.welcomeChannelId}) not found in guild ${member.guild.id}.`);
             return;
         }
 

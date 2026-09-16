@@ -75,6 +75,11 @@ db.exec(`
         count INTEGER NOT NULL DEFAULT 0,
         PRIMARY KEY (guildId, userId, date)
     );
+    
+    CREATE TABLE IF NOT EXISTS guild_settings (
+        guildId TEXT PRIMARY KEY,
+        welcomeChannelId TEXT
+    );
 `);
 
 module.exports = db;
