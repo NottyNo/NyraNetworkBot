@@ -1,8 +1,10 @@
 const { Events, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const path = require('node:path');
 const db = require('../database/db');
 const { colors: { embed: embedColor } } = require('../config/colors.json');
 
-const WELCOME_IMAGE_PATH = '../images/welcome.png';
+// Resolves relative to THIS file's location, not the process's working directory
+const WELCOME_IMAGE_PATH = path.join(__dirname, '../images/welcome.png');
 
 module.exports = {
     name: Events.GuildMemberAdd,
@@ -12,7 +14,6 @@ module.exports = {
         `).get(member.guild.id);
 
         if (!settings?.welcomeChannelId) {
-            // No welcome channel configured for this server yet
             return;
         }
 
