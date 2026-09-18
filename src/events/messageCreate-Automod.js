@@ -9,11 +9,11 @@ const SPAM_MESSAGE_LIMIT = 5;
 const SPAM_DUPLICATE_LIMIT = 15;
 const SPAM_TIMEOUT_MS = 60 * 1000;
 const SPAM_WARN_DECAY_MS = 5 * 60 * 1000;
-const SPAM_TRIGGER_COOLDOWN_MS = 10 * 1000; // don't re-trigger spam warn within 10s of the last one
+const SPAM_TRIGGER_COOLDOWN_MS = 10 * 1000;
 
 const messageLog = new Map();
 const spamDecayTimers = new Map();
-const lastSpamTrigger = new Map(); // key: `${guildId}-${userId}` -> timestamp
+const lastSpamTrigger = new Map();
 
 async function issueAutomodWarn(message, reason, options = {}) {
     await message.delete().catch(() => {});
@@ -34,7 +34,14 @@ async function issueAutomodWarn(message, reason, options = {}) {
         SELECT COUNT(*) AS count FROM warns WHERE guildId = ? AND userId = ?
     `).get(message.guild.id, message.author.id).count;
 
-    await message.channel.send(`${message.author}, ${reason.toLowerCase()}! (Warning ${warnCount})`);
+    // Send the warning privately via DM instead of in the channel and log to console
+    await message.author.send(
+        console.log(`Sending automod warning to ${message.author.tag} (${message.author.id}): ${reason} : Warning #${warnCount}`),
+        `⚠️ You were warned in **${message.guild.name}**: ${reason.toLowerCase()}! (Warning ${warnCount})`
+    ).catch(() => {
+        // User has DMs disabled or blocked the bot
+        console.warn(`Could not DM warning to ${message.author.tag} (${message.author.id}).`);
+    });
 
     const member = await message.guild.members.fetch(message.author.id);
 
@@ -75,7 +82,6 @@ function isSpamming(message) {
     recent.push({ content: message.content, timestamp: now });
     messageLog.set(key, recent);
 
-    // Skip re-triggering if we already flagged this user very recently
     const lastTrigger = lastSpamTrigger.get(key) ?? 0;
     if (now - lastTrigger < SPAM_TRIGGER_COOLDOWN_MS) {
         return null;
@@ -83,7 +89,7 @@ function isSpamming(message) {
 
     if (recent.length > SPAM_MESSAGE_LIMIT) {
         lastSpamTrigger.set(key, now);
-        messageLog.set(key, []); // reset their log so it doesn't immediately re-trigger
+        messageLog.set(key, []);
         return 'Automod: message spam';
     }
 
