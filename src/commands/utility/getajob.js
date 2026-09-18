@@ -1,5 +1,5 @@
 const { PermissionFlagsBits, EmbedBuilder, AttachmentBuilder, SlashCommandBuilder } = require('discord.js');
-const { colors: { embed: embedColor } } = require('../config/colors.json');
+const { colors: { embed: embedColor } } = require('../../config/colors.json');
 const JOB_IMAGE_PATH = '../images/job-application.png';
 
 module.exports = {
