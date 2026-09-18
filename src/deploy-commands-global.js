@@ -34,10 +34,13 @@ rest.on(RESTEvents.Response, (request, response) => {
 (async () => {
     try {
         console.log(`Started refreshing ${commands.length} application (/) commands.`);
+        console.log('Commands to be deployed:');
+        commands.forEach((cmd) => console.log(`  - /${cmd.name}`));
 
         const data = await rest.put(Routes.applicationCommands(clientId), { body: commands });
 
-        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+        console.log(`\nSuccessfully reloaded ${data.length} application (/) commands:`);
+        data.forEach((cmd) => console.log(`  - /${cmd.name} (ID: ${cmd.id})`));
     } catch (error) {
         console.error(error);
     }
