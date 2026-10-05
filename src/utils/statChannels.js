@@ -6,6 +6,16 @@ const UPDATE_COOLDOWN_MS = 10 * 60 * 1000;
 const lastUpdate = new Map();
 const pendingUpdate = new Map();
 
+function lockedOverwrites(guild) {
+    return [
+        {
+            id: guild.roles.everyone.id,
+            deny: [PermissionFlagsBits.Connect],
+            allow: [PermissionFlagsBits.ViewChannel],
+        },
+    ];
+}
+
 async function buildName(def, guild) {
     if (!def.dynamic) return def.name;
 
@@ -25,10 +35,9 @@ async function buildName(def, guild) {
 async function moveCategoryToTop(category) {
     const guild = category.guild;
 
-    const categories = [...guild.channels.cache
-        .filter((c) => c.type === ChannelType.GuildCategory)
-        .values()]
-        .sort((a, b) => a.rawPosition - b.rawPosition || (a.id > b.id ? 1 : -1));
+    const categories = [
+        ...guild.channels.cache.filter((c) => c.type === ChannelType.GuildCategory).values(),
+    ].sort((a, b) => a.rawPosition - b.rawPosition || (a.id > b.id ? 1 : -1));
 
     const ordered = [category, ...categories.filter((c) => c.id !== category.id)];
     const positions = ordered.map((c, index) => ({ channel: c.id, position: index }));
@@ -40,6 +49,15 @@ async function moveCategoryToTop(category) {
     }
 }
 
+function createStatChannel(guild, category, name) {
+    return guild.channels.create({
+        name,
+        type: ChannelType.GuildVoice,
+        parent: category.id,
+        permissionOverwrites: lockedOverwrites(guild),
+    });
+}
+
 async function setupStatChannels(guild) {
     const existing = db.prepare(`SELECT COUNT(*) AS count FROM stat_channels WHERE guildId = ?`).get(guild.id);
     if (existing.count > 0) return;
@@ -47,30 +65,12 @@ async function setupStatChannels(guild) {
     const category = await guild.channels.create({
         name: config.categoryName,
         type: ChannelType.GuildCategory,
-        permissionOverwrites: [
-            {
-                id: guild.roles.everyone.id,
-                deny: [PermissionFlagsBits.Connect],
-                allow: [PermissionFlagsBits.ViewChannel],
-            },
-        ],
+        permissionOverwrites: lockedOverwrites(guild),
     });
 
     for (const def of config.channels) {
         const name = await buildName(def, guild);
-
-        const channel = await guild.channels.create({
-            name,
-            type: ChannelType.GuildVoice,
-            parent: category.id,
-            permissionOverwrites: [
-                {
-                    id: guild.roles.everyone.id,
-                    deny: [PermissionFlagsBits.Connect],
-                    allow: [PermissionFlagsBits.ViewChannel],
-                },
-            ],
-        });
+        const channel = await createStatChannel(guild, category, name);
 
         db.prepare(`
             INSERT OR REPLACE INTO stat_channels (guildId, key, channelId)
@@ -82,15 +82,17 @@ async function setupStatChannels(guild) {
 }
 
 async function performUpdate(guild) {
+    // Mark the update as started right away so overlapping calls respect the cooldown
+    lastUpdate.set(guild.id, Date.now());
+
     let category = null;
 
     for (const def of config.channels) {
         if (!def.dynamic) continue;
 
-        const row = db.prepare(`
-            SELECT channelId FROM stat_channels WHERE guildId = ? AND key = ?
-        `).get(guild.id, def.key);
-
+        const row = db
+            .prepare(`SELECT channelId FROM stat_channels WHERE guildId = ? AND key = ?`)
+            .get(guild.id, def.key);
         if (!row) continue;
 
         const channel = guild.channels.cache.get(row.channelId);
@@ -107,32 +109,30 @@ async function performUpdate(guild) {
     if (category) {
         await moveCategoryToTop(category);
     }
+}
 
-    lastUpdate.set(guild.id, Date.now());
+function runUpdate(guild) {
+    return performUpdate(guild).catch((error) => {
+        console.error(`Failed to update stat channels for guild ${guild.id}:`, error);
+    });
 }
 
 function updateStatChannels(guild) {
-    const last = lastUpdate.get(guild.id) ?? 0;
-    const elapsed = Date.now() - last;
+    const elapsed = Date.now() - (lastUpdate.get(guild.id) ?? 0);
 
     if (elapsed >= UPDATE_COOLDOWN_MS) {
-        performUpdate(guild);
+        runUpdate(guild);
         return;
     }
 
     if (pendingUpdate.has(guild.id)) return;
 
-    const delay = UPDATE_COOLDOWN_MS - elapsed;
     const timer = setTimeout(() => {
-        performUpdate(guild);
         pendingUpdate.delete(guild.id);
-    }, delay);
+        runUpdate(guild);
+    }, UPDATE_COOLDOWN_MS - elapsed);
 
     pendingUpdate.set(guild.id, timer);
-}
-
-async function forceUpdateStatChannels(guild) {
-    await performUpdate(guild);
 }
 
 async function syncStatChannels(guild) {
@@ -150,35 +150,23 @@ async function syncStatChannels(guild) {
         category = await guild.channels.create({
             name: config.categoryName,
             type: ChannelType.GuildCategory,
+            permissionOverwrites: lockedOverwrites(guild),
         });
     }
 
     const configKeys = config.channels.map((c) => c.key);
 
     for (const def of config.channels) {
-        const row = db.prepare(`
-            SELECT * FROM stat_channels WHERE guildId = ? AND key = ?
-        `).get(guild.id, def.key);
+        const row = db
+            .prepare(`SELECT * FROM stat_channels WHERE guildId = ? AND key = ?`)
+            .get(guild.id, def.key);
 
         const desiredName = await buildName(def, guild);
 
         if (!row) {
-            const channel = await guild.channels.create({
-                name: desiredName,
-                type: ChannelType.GuildVoice,
-                parent: category.id,
-                permissionOverwrites: [
-                    {
-                        id: guild.roles.everyone.id,
-                        deny: [PermissionFlagsBits.Connect],
-                        allow: [PermissionFlagsBits.ViewChannel],
-                    },
-                ],
-            });
-
+            const channel = await createStatChannel(guild, category, desiredName);
             db.prepare(`
-                INSERT INTO stat_channels (guildId, key, channelId)
-                VALUES (?, ?, ?)
+                INSERT INTO stat_channels (guildId, key, channelId) VALUES (?, ?, ?)
             `).run(guild.id, def.key, channel.id);
 
             results.created.push(desiredName);
@@ -187,19 +175,7 @@ async function syncStatChannels(guild) {
 
         const channel = guild.channels.cache.get(row.channelId);
         if (!channel) {
-            const newChannel = await guild.channels.create({
-                name: desiredName,
-                type: ChannelType.GuildVoice,
-                parent: category.id,
-                permissionOverwrites: [
-                    {
-                        id: guild.roles.everyone.id,
-                        deny: [PermissionFlagsBits.Connect],
-                        allow: [PermissionFlagsBits.ViewChannel],
-                    },
-                ],
-            });
-
+            const newChannel = await createStatChannel(guild, category, desiredName);
             db.prepare(`
                 UPDATE stat_channels SET channelId = ? WHERE guildId = ? AND key = ?
             `).run(newChannel.id, guild.id, def.key);
@@ -219,9 +195,7 @@ async function syncStatChannels(guild) {
             const channel = guild.channels.cache.get(row.channelId);
             if (channel) await channel.delete().catch(() => {});
 
-            db.prepare(`
-                DELETE FROM stat_channels WHERE guildId = ? AND key = ?
-            `).run(guild.id, row.key);
+            db.prepare(`DELETE FROM stat_channels WHERE guildId = ? AND key = ?`).run(guild.id, row.key);
 
             results.removed.push(row.key);
         }
@@ -232,4 +206,4 @@ async function syncStatChannels(guild) {
     return results;
 }
 
-module.exports = { setupStatChannels, updateStatChannels, forceUpdateStatChannels, syncStatChannels };
+module.exports = { setupStatChannels, updateStatChannels, syncStatChannels };

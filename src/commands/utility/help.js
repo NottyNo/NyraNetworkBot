@@ -23,18 +23,17 @@ module.exports = {
             grouped[category].push(command);
         }
 
-        // Sort categories alphabetically, and commands within each category alphabetically
         const sortedCategories = Object.keys(grouped).sort();
 
         const embed = new EmbedBuilder()
-            .setTitle('📖 Command List')
+            .setTitle('Command List')
             .setColor(embedColor)
             .setDescription(`Showing all **${commands.length}** available commands.`);
 
         for (const category of sortedCategories) {
             const commandList = grouped[category]
                 .sort((a, b) => a.data.name.localeCompare(b.data.name))
-                .map((cmd) => `\`/${cmd.data.name}\` — ${cmd.data.description || 'No description provided.'}`)
+                .map((cmd) => `\`/${cmd.data.name}\` - ${cmd.data.description || 'No description provided.'}`)
                 .join('\n');
 
             embed.addFields({

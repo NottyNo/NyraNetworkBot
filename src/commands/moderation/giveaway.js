@@ -1,6 +1,7 @@
 const {
     SlashCommandBuilder,
     PermissionFlagsBits,
+    InteractionContextType,
     MessageFlags,
 } = require('discord.js');
 const db = require('../../database/db');
@@ -19,6 +20,7 @@ module.exports = {
         .setName('giveaway')
         .setDescription('Manage giveaways.')
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .setContexts(InteractionContextType.Guild)
         .addSubcommand((sub) =>
             sub
                 .setName('create')
@@ -46,9 +48,7 @@ module.exports = {
                 .addIntegerOption((o) => o.setName('count').setDescription('How many new winners to pick').setMinValue(1))
         )
         .addSubcommand((sub) =>
-            sub
-                .setName('list')
-                .setDescription('List active giveaways in this server.')
+            sub.setName('list').setDescription('List active giveaways in this server.')
         ),
 
     async execute(interaction) {
@@ -62,7 +62,7 @@ module.exports = {
             const durationMs = parseDuration(durationStr);
             if (!durationMs || durationMs < 10000) {
                 return interaction.reply({
-                    content: 'Invalid duration. Use a format like `1d`, `12h`, `30m`, or `1d12h`.',
+                    content: 'Invalid duration. Use a format like `1d`, `12h`, `30m`, or `1d12h` (minimum 10 seconds).',
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -80,7 +80,15 @@ module.exports = {
             const result = db.prepare(`
                 INSERT INTO giveaways (guildId, channelId, hostId, prize, winnerCount, requirements, endTime)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            `).run(interaction.guild.id, interaction.channel.id, interaction.user.id, prize, winnerCount, JSON.stringify(requirements), endTime);
+            `).run(
+                interaction.guild.id,
+                interaction.channel.id,
+                interaction.user.id,
+                prize,
+                winnerCount,
+                JSON.stringify(requirements),
+                endTime
+            );
 
             const giveawayId = result.lastInsertRowid;
             const row = db.prepare(`SELECT * FROM giveaways WHERE id = ?`).get(giveawayId);
@@ -93,14 +101,16 @@ module.exports = {
             db.prepare(`UPDATE giveaways SET messageId = ? WHERE id = ?`).run(message.id, giveawayId);
 
             return interaction.reply({
-                content: `✅ Giveaway **#${giveawayId}** created for **${prize}**.`,
+                content: `Giveaway **#${giveawayId}** created for **${prize}**.`,
                 flags: MessageFlags.Ephemeral,
             });
         }
 
         if (sub === 'end') {
             const giveawayId = interaction.options.getInteger('giveaway_id');
-            const row = db.prepare(`SELECT * FROM giveaways WHERE id = ? AND guildId = ?`).get(giveawayId, interaction.guild.id);
+            const row = db
+                .prepare(`SELECT * FROM giveaways WHERE id = ? AND guildId = ?`)
+                .get(giveawayId, interaction.guild.id);
 
             if (!row) {
                 return interaction.reply({ content: 'Giveaway not found.', flags: MessageFlags.Ephemeral });
@@ -111,47 +121,61 @@ module.exports = {
 
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
             await endGiveaway(interaction.client, row);
-            return interaction.editReply(`✅ Giveaway **#${giveawayId}** ended.`);
+            return interaction.editReply(`Giveaway **#${giveawayId}** ended.`);
         }
 
         if (sub === 'reroll') {
             const giveawayId = interaction.options.getInteger('giveaway_id');
             const count = interaction.options.getInteger('count');
-            const row = db.prepare(`SELECT * FROM giveaways WHERE id = ? AND guildId = ?`).get(giveawayId, interaction.guild.id);
+            const row = db
+                .prepare(`SELECT * FROM giveaways WHERE id = ? AND guildId = ?`)
+                .get(giveawayId, interaction.guild.id);
 
             if (!row || !row.ended) {
-                return interaction.reply({ content: 'That giveaway does not exist or has not ended yet.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({
+                    content: 'That giveaway does not exist or has not ended yet.',
+                    flags: MessageFlags.Ephemeral,
+                });
             }
 
-            const entries = db.prepare(`SELECT userId FROM giveaway_entries WHERE giveawayId = ?`).all(giveawayId)
+            const entries = db
+                .prepare(`SELECT userId FROM giveaway_entries WHERE giveawayId = ?`)
+                .all(giveawayId)
                 .map((e) => e.userId);
             const previousWinners = JSON.parse(row.winners);
             const newWinners = pickWinners(entries, count ?? row.winnerCount, previousWinners);
 
-            db.prepare(`UPDATE giveaways SET winners = ? WHERE id = ?`).run(JSON.stringify(newWinners), giveawayId);
-
             if (newWinners.length === 0) {
-                return interaction.reply({ content: 'No eligible entries left to reroll from.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({
+                    content: 'No eligible entries left to reroll from.',
+                    flags: MessageFlags.Ephemeral,
+                });
             }
 
-            await interaction.channel.send(
-                `🎉 New winner(s) for **${row.prize}**: ${newWinners.map((id) => `<@${id}>`).join(', ')}!`
+            // Keep the old winners too, so later rerolls never pick them again
+            db.prepare(`UPDATE giveaways SET winners = ? WHERE id = ?`).run(
+                JSON.stringify([...previousWinners, ...newWinners]),
+                giveawayId
             );
-            return interaction.reply({ content: '✅ Rerolled.', flags: MessageFlags.Ephemeral });
+
+            await interaction.channel.send(
+                `New winner(s) for **${row.prize}**: ${newWinners.map((id) => `<@${id}>`).join(', ')}!`
+            );
+            return interaction.reply({ content: 'Rerolled.', flags: MessageFlags.Ephemeral });
         }
 
         if (sub === 'list') {
-            const rows = db.prepare(`
-                SELECT * FROM giveaways WHERE guildId = ? AND ended = 0 ORDER BY endTime ASC
-            `).all(interaction.guild.id);
+            const rows = db
+                .prepare(`SELECT * FROM giveaways WHERE guildId = ? AND ended = 0 ORDER BY endTime ASC`)
+                .all(interaction.guild.id);
 
             if (rows.length === 0) {
                 return interaction.reply({ content: 'No active giveaways.', flags: MessageFlags.Ephemeral });
             }
 
-            const list = rows.map((r) =>
-                `**#${r.id}** — ${r.prize} — ends <t:${Math.floor(r.endTime / 1000)}:R>`
-            ).join('\n');
+            const list = rows
+                .map((r) => `**#${r.id}** - ${r.prize} - ends <t:${Math.floor(r.endTime / 1000)}:R>`)
+                .join('\n');
 
             return interaction.reply({ content: list, flags: MessageFlags.Ephemeral });
         }

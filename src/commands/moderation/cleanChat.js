@@ -1,6 +1,10 @@
-const { SlashCommandBuilder, PermissionFlagsBits, InteractionContextType, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    InteractionContextType,
+    MessageFlags,
+} = require('discord.js');
 const { colors: { embed: embedColor } } = require('../../config/colors.json');
-
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,41 +13,37 @@ module.exports = {
         .addIntegerOption((option) =>
             option
                 .setName('amount')
-                .setDescription('The number of messages to delete.')
+                .setDescription('The number of messages to delete (1-100).')
                 .setRequired(true)
+                .setMinValue(1)
+                .setMaxValue(100)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
         .setContexts(InteractionContextType.Guild),
+
     async execute(interaction) {
         const amount = interaction.options.getInteger('amount');
-        const replyEmbed = {
-            color: embedColor,
-            title: 'Chat Cleared',
-            description: `Successfully deleted \`${amount}\` messages.`,
-        };
-        if (amount < 1 || amount > 100) {
-            return interaction.reply({ 
-                content: 'You can only delete between 1 and 100 messages.', 
-                flags: MessageFlags.Ephemeral 
+
+        try {
+            // true = skip messages older than 14 days, which Discord cannot bulk delete
+            const deleted = await interaction.channel.bulkDelete(amount, true);
+
+            await interaction.reply({
+                embeds: [
+                    {
+                        color: embedColor,
+                        title: 'Chat Cleared',
+                        description: `Successfully deleted \`${deleted.size}\` messages.`,
+                    },
+                ],
+                flags: MessageFlags.Ephemeral,
             });
-        } else if (!interaction.member.permissions.has(PermissionFlagsBits.ManageMessages)) {
-            return interaction.reply({ 
-                content: 'You do not have permission to manage messages in this channel.', 
-                flags: MessageFlags.Ephemeral 
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({
+                content: 'There was an error trying to delete messages in this channel!',
+                flags: MessageFlags.Ephemeral,
             });
-        } else {
-            try {
-                await interaction.channel.bulkDelete(amount, true);
-                await interaction.reply({ 
-                    embeds: [replyEmbed],
-                    flags: MessageFlags.Ephemeral
-                });
-            } catch (error) {
-                console.error(error);
-                await interaction.reply({ 
-                    content: 'There was an error trying to delete messages in this channel!', 
-                    flags: MessageFlags.Ephemeral });
-            }
         }
-    }
-}
+    },
+};

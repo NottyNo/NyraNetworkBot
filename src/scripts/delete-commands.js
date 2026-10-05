@@ -1,18 +1,24 @@
+// Usage:
+//   node src/scripts/delete-commands.js guild <commandId>
+//   node src/scripts/delete-commands.js global <commandId>
 const { REST, Routes } = require('discord.js');
-const { clientId, guildId, token } = require('./config.json');
+const { clientId, guildId, token } = require('../config/config.json');
+
+const [scope, commandId] = process.argv.slice(2);
+
+if (!['guild', 'global'].includes(scope) || !commandId) {
+    console.error('Usage: node src/scripts/delete-commands.js <guild|global> <commandId>');
+    process.exit(1);
+}
 
 const rest = new REST().setToken(token);
 
-// ...
+const route =
+    scope === 'guild'
+        ? Routes.applicationGuildCommand(clientId, guildId, commandId)
+        : Routes.applicationCommand(clientId, commandId);
 
-// for guild-based commands
 rest
-	.delete(Routes.applicationGuildCommand(clientId, guildId, 'commandId'))
-	.then(() => console.log('Successfully deleted guild command'))
-	.catch(console.error);
-
-// for global commands
-rest
-	.delete(Routes.applicationCommand(clientId, 'commandId'))
-	.then(() => console.log('Successfully deleted application command'))
-	.catch(console.error);
+    .delete(route)
+    .then(() => console.log(`Successfully deleted ${scope} command ${commandId}`))
+    .catch(console.error);

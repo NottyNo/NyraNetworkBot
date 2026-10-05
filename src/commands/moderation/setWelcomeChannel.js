@@ -1,4 +1,10 @@
-const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    ChannelType,
+    InteractionContextType,
+    MessageFlags,
+} = require('discord.js');
 const db = require('../../database/db');
 
 module.exports = {
@@ -12,7 +18,9 @@ module.exports = {
                 .addChannelTypes(ChannelType.GuildText)
                 .setRequired(true)
         )
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .setContexts(InteractionContextType.Guild),
+
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');
 
@@ -23,7 +31,7 @@ module.exports = {
         `).run(interaction.guild.id, channel.id);
 
         await interaction.reply({
-            content: `✅ Welcome messages will now be sent in ${channel}.`,
+            content: `Welcome messages will now be sent in ${channel}.`,
             flags: MessageFlags.Ephemeral,
         });
     },

@@ -1,4 +1,9 @@
-const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    InteractionContextType,
+    MessageFlags,
+} = require('discord.js');
 const db = require('../../database/db');
 
 module.exports = {
@@ -11,7 +16,9 @@ module.exports = {
         .addStringOption((option) =>
             option.setName('reason').setDescription('Reason for the warning').setRequired(true)
         )
-        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ModerateMembers)
+        .setContexts(InteractionContextType.Guild),
+
     async execute(interaction) {
         const target = interaction.options.getUser('target');
         const reason = interaction.options.getString('reason');

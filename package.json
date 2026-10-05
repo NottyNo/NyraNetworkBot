@@ -1,17 +1,21 @@
 {
-  "dependencies": {
-    "better-sqlite3": "^13.0.3",
-    "discord.js": "^14.27.0"
-  },
-  "allowScripts": {
-    "better-sqlite3": true
-  },
   "name": "nyra-network-dev",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "deploy:guild": "node src/deploy-commands-guild.js",
+    "deploy:global": "node src/deploy-commands-global.js",
+    "fix-levels": "node src/scripts/fixLevels.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "discord.js": "^14.27.0",
+    "undici": "^6.28.1"
+  },
+  "allowScripts": {
+    "better-sqlite3": true
   },
   "keywords": [],
   "author": "no8tm",

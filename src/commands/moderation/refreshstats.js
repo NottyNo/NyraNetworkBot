@@ -1,4 +1,10 @@
-const { SlashCommandBuilder, PermissionFlagsBits, MessageFlags, EmbedBuilder } = require('discord.js');
+const {
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    InteractionContextType,
+    MessageFlags,
+    EmbedBuilder,
+} = require('discord.js');
 const { syncStatChannels } = require('../../utils/statChannels');
 const { colors: { embed: embedColor } } = require('../../config/colors.json');
 
@@ -6,7 +12,9 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('refreshstats')
         .setDescription('Sync stats channels with the current config (creates, renames, removes as needed).')
-        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+        .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+        .setContexts(InteractionContextType.Guild),
+
     async execute(interaction) {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
@@ -19,7 +27,7 @@ module.exports = {
                 .addFields(
                     { name: 'Created', value: results.created.length ? results.created.join('\n') : 'None' },
                     { name: 'Renamed', value: results.renamed.length ? results.renamed.join('\n') : 'None' },
-                    { name: 'Removed', value: results.removed.length ? results.removed.join('\n') : 'None' },
+                    { name: 'Removed', value: results.removed.length ? results.removed.join('\n') : 'None' }
                 );
 
             await interaction.editReply({ embeds: [embed] });
