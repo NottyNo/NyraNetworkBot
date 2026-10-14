@@ -82,4 +82,9 @@ db.exec(`
     );
 `);
 
+// Upgrade existing databases without replacing saved server settings.
+if (!db.pragma('table_info(guild_settings)').some((column) => column.name === 'levelChannelId')) {
+    db.exec('ALTER TABLE guild_settings ADD COLUMN levelChannelId TEXT');
+}
+
 module.exports = db;

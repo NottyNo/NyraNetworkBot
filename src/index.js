@@ -4,7 +4,7 @@ const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { Agent, setGlobalDispatcher } = require('undici');
 const { token } = require('./config/config.json');
 
-// Reuse connections instead of opening a new one per request —
+// Reuse connections instead of opening a new one per request -
 // reduces how often a burst of commands causes connection timeouts
 setGlobalDispatcher(new Agent({
     keepAliveTimeout: 30_000,

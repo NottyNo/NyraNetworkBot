@@ -1,6 +1,5 @@
 const db = require('../database/db');
 const { roleMultipliers, default: defaultMultiplier } = require('../config/xpMultipliers.json');
-const { levelUpChannelId } = require('../config/settings.json');
 
 function getMultiplier(member) {
     let highest = defaultMultiplier;
@@ -34,6 +33,8 @@ function levelFromXp(xp) {
 }
 
 function getLevelUpChannel(guild) {
+    const settings = db.prepare('SELECT levelChannelId FROM guild_settings WHERE guildId = ?').get(guild.id);
+    const levelUpChannelId = settings?.levelChannelId;
     if (!levelUpChannelId) return null;
     return guild.channels.cache.get(levelUpChannelId) ?? null;
 }

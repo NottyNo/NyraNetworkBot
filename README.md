@@ -7,9 +7,10 @@ Personal Discord bot built with [discord.js](https://discord.js.org/) for a frie
 1. Install dependencies: `npm install`
 2. Copy `src/config/config.example.json` to `src/config/config.json` and fill in your values.
 3. Copy `src/config/bannedWords.example.json` to `src/config/bannedWords.json` and add your words.
-4. Edit `src/config/xpMultipliers.json` (role IDs) and `src/config/settings.json` (level-up channel ID).
+4. Edit `src/config/xpMultipliers.json` (role IDs).
 5. Register the slash commands: `npm run deploy:guild` (or `npm run deploy:global`).
 6. Start the bot: `npm start`
+7. Use `/setlevelchannel channel` to select the text and voice level-up channel for your server (requires Manage Server). The setting persists across restarts. Until configured, XP still accumulates but announcements stay off.
 
 ## Features
 
@@ -25,6 +26,7 @@ Personal Discord bot built with [discord.js](https://discord.js.org/) for a frie
 - `/unmute target` - Remove a voice mute
 - `/giveaway create|end|reroll|list` - Create and manage giveaways with entry requirements
 - `/setwelcomechannel channel` - Set where welcome messages are sent
+- `/setlevelchannel channel` - Set where text and voice level-up messages are sent
 - `/setupstats` - Create the stats channels (members, bots, server IP, invite)
 - `/refreshstats` - Sync stats channels with the current config
 
